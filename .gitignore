@@ -1,1 +1,46 @@
-UAVVasteDataset
+# Dataset - ignore images but allow annotations
+UAVVasteDataset/images/
+# Don't ignore annotations
+!UAVVasteDataset/annotations/
+
+# Virtual Environment
+.venv/
+env/
+venv/
+ENV/
+.env/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# IDE files
+.idea/
+.vscode/
+*.swp
+*.swo
+*.png
+*.jpg
+*.jpeg
+*.txt
