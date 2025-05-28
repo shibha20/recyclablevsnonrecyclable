@@ -1,3 +1,5 @@
+
+#2. initial training script
 from ultralytics import YOLO
 import os
 import torch

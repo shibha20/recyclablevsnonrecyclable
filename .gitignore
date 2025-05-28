@@ -32,6 +32,11 @@ wheels/
 .installed.cfg
 *.egg
 
+# Keep requirements.txt in version control
+!requirements.txt
+!app.requirements.txt
+
+
 # Jupyter Notebook
 .ipynb_checkpoints
 

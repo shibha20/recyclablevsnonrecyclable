@@ -1,3 +1,4 @@
+#3.Fine-tuning script to fine tune on UAVVaste dataset 
 from ultralytics import YOLO
 import torch
 from pathlib import Path
