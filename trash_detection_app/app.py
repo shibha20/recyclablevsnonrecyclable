@@ -34,7 +34,8 @@ print(f"Result folder: {os.path.abspath(app.config['RESULT_FOLDER'])}")
 print(f"Static folder: {os.path.abspath(app.static_folder)}")
 
 # Load the YOLO model
-model_path = 'yolo_trash_detection/trash_detection/weights/finetuned.pt'
+model_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'yolo_trash_detection', 'trash_detection', 'weights', 'finetuned.pt')
+print(f"Loading model from: {model_path}")
 model = YOLO(model_path, task='detect')  # Load the custom trained model
 
 def allowed_file(filename):
@@ -224,4 +225,4 @@ def result_file(filename):
         return str(e), 500
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5055)
+    app.run(debug=True, host='0.0.0.0', port=5057)
