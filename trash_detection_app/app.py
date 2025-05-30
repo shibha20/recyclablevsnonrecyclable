@@ -1,4 +1,5 @@
 import os
+import inspect
 from flask import Flask, render_template, request, redirect, url_for, send_from_directory, send_file, jsonify
 from werkzeug.utils import secure_filename
 from ultralytics import YOLO
@@ -33,10 +34,49 @@ print(f"Upload folder: {os.path.abspath(app.config['UPLOAD_FOLDER'])}")
 print(f"Result folder: {os.path.abspath(app.config['RESULT_FOLDER'])}")
 print(f"Static folder: {os.path.abspath(app.static_folder)}")
 
-# Load the YOLO model
-model_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'yolo_trash_detection', 'trash_detection', 'weights', 'finetuned.pt')
-print(f"Loading model from: {model_path}")
-model = YOLO(model_path, task='detect')  # Load the custom trained model
+# Initialize model as None
+model = None
+
+try:
+    print("Initializing YOLO model...")
+    import torch
+    import sys
+    from ultralytics import YOLO
+    
+    # Set environment variables
+    import os
+    os.environ['YOLO_VERBOSE'] = 'False'
+    
+    # Workaround for PyTorch 2.6+ security settings
+    if sys.version_info >= (3, 11) and hasattr(torch.serialization, 'safe_globals'):
+        print("Using PyTorch 2.6+ safe loading workaround...")
+        import functools
+        import pickle
+        import warnings
+        
+        # Monkey patch torch.load to use weights_only=False for YOLO models
+        original_torch_load = torch.load
+        
+        def patched_torch_load(*args, **kwargs):
+            if 'weights_only' in inspect.signature(original_torch_load).parameters:
+                kwargs['weights_only'] = False
+            return original_torch_load(*args, **kwargs)
+        
+        torch.load = patched_torch_load
+        
+        # Suppress the warning about arbitrary code execution
+        warnings.filterwarnings('ignore', message='.*arbitrary code execution.*')
+    
+    # Load the fine-tuned model
+    model_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 
+                            'yolo_trash_detection', 'trash_detection', 'weights', 'finetuned.pt')
+    print(f"Loading fine-tuned model from: {model_path}")
+    model = YOLO(model_path, task='detect')
+    print("Model loaded successfully!")
+    
+except Exception as e:
+    print(f"Error loading YOLO model: {e}")
+    print("Warning: Running without model - detection features will not work")
 
 def allowed_file(filename):
     return '.' in filename and \
@@ -44,6 +84,10 @@ def allowed_file(filename):
 
 def process_image(image_path):
     """Process the image using YOLO model and return the annotated image path and detection info"""
+    # Check if model is loaded
+    if model is None:
+        raise ValueError("Model failed to load. Please check the server logs.")
+        
     # Generate a unique filename for the result
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     result_filename = f"result_{timestamp}.jpg"
@@ -225,4 +269,4 @@ def result_file(filename):
         return str(e), 500
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5057)
+    app.run(debug=True, host='0.0.0.0', port=5059)
